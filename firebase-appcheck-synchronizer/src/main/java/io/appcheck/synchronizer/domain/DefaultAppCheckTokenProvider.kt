@@ -1,0 +1,123 @@
+package io.appcheck.synchronizer.domain
+
+import androidx.annotation.VisibleForTesting
+import io.appcheck.synchronizer.data.AppCheckTokenExecutor
+import io.appcheck.synchronizer.domain.entity.AppCheckState
+import io.appcheck.synchronizer.utils.Logger
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
+/**
+ * Class is designed to be used as singleton
+ */
+internal class DefaultAppCheckTokenProvider(
+    private val appCheckTokenExecutor: AppCheckTokenExecutor,
+    private val blockedTimeAfterError: Long = 0L
+) : AppCheckTokenProvider {
+
+    private var state: AppCheckState = AppCheckState.Idle
+    private val mutex = Mutex()
+
+    private val currentTimeMillis: Long
+        get() = System.currentTimeMillis()
+
+    @VisibleForTesting
+    val appCheckState: AppCheckState
+        get() = state
+
+    override suspend fun provideAppCheckToken(): String {
+        return try {
+            mutex.withLock {
+                Logger.i(
+                    "FirebaseAppCheck",
+                    "class: [FirebaseAppCheckManager], " +
+                        "action: [token request is executing], " +
+                        "thread: [${Thread.currentThread().id}}]"
+                )
+
+                if (!allowRetry()) {
+                    notifyStateChanged(generateRetryNotAllowedState())
+                    return@withLock FAILURE_BACKUP_TOKEN
+                }
+
+                val tokenResult = appCheckTokenExecutor.getToken()
+                    .onSuccess { token ->
+                        notifyStateChanged(AppCheckState.Ready(token))
+                    }.onFailure { exception ->
+                        val errorState = AppCheckState.Error(
+                            exception = exception,
+                            timestampMillis = currentTimeMillis,
+                            unblockRetryTime = calculateUnblockTime()
+                        )
+                        notifyStateChanged(errorState)
+                    }
+
+                tokenResult.getOrNull() ?: FAILURE_BACKUP_TOKEN
+            }
+        } catch (exception: TimeoutCancellationException) {
+            val errorState = AppCheckState.Error(
+                exception = exception,
+                timestampMillis = currentTimeMillis,
+                unblockRetryTime = calculateUnblockTime()
+            )
+            notifyStateChanged(errorState)
+            FAILURE_BACKUP_TOKEN
+        }
+    }
+
+    private fun allowRetry(): Boolean {
+        return when (val currentState = state) {
+            is AppCheckState.Error -> {
+                currentTimeMillis >= currentState.unblockRetryTime
+            }
+
+            is AppCheckState.RetryNotAllowed -> {
+                currentTimeMillis >= currentState.unblockRetryTime
+            }
+
+            else -> {
+                true
+            }
+        }
+    }
+
+    private fun generateRetryNotAllowedState(): AppCheckState.RetryNotAllowed {
+        return when (val currentState = state) {
+            is AppCheckState.Error -> {
+                AppCheckState.RetryNotAllowed(
+                    originalException = currentState.exception,
+                    unblockRetryTime = currentState.unblockRetryTime
+                )
+            }
+
+            is AppCheckState.RetryNotAllowed -> {
+                currentState
+            }
+
+            else -> {
+                throw IllegalStateException("Current state: [$currentState], retry should be allowed")
+            }
+        }
+    }
+
+    private fun calculateUnblockTime(): Long {
+        return System.currentTimeMillis() + blockedTimeAfterError
+    }
+
+    private fun notifyStateChanged(state: AppCheckState) {
+        this.state = state
+
+        Logger.i(
+            "FirebaseAppCheck",
+            "class: [FirebaseAppCheckManager], " +
+                "action: [state changed: [$state] ], " +
+                "thread: [${Thread.currentThread().id}}]"
+        )
+    }
+
+    private companion object {
+
+        private const val FAILURE_BACKUP_TOKEN = ""
+    }
+}

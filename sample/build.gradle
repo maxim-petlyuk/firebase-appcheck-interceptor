@@ -3,14 +3,16 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+apply from: '../dependencies.gradle'
+
 android {
     namespace 'io.appcheck.app'
-    compileSdk 33
+    compileSdk appConfig.compileSdk
 
     defaultConfig {
         applicationId "io.appcheck.app"
-        minSdk 23
-        targetSdk 33
+        minSdk appConfig.minSdk
+        targetSdk appConfig.targetSdk
         versionCode 1
         versionName "1.0"
 
@@ -35,9 +37,9 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
+    implementation android.coreKtx
+    implementation android.appcompat
+    implementation android.material
 
     testImplementation 'junit:junit:4.13.2'
 
