@@ -22,4 +22,4 @@ Actual problem is that this code is not synchronized inside Firebase Android SDK
 
 Considering that Firebase Android SDK has [**quota limit**](https://firebase.google.com/docs/app-check#quotas_limits),  you should avoid this. Good news that have already done it for you. Check details at the bottom.
 
-You can find details about proper integration [here](../blob/main/firebase-appcheck-synchronizer/README.md) 
+You can find details about proper integration [here](../main/firebase-appcheck-synchronizer/README.md) 
