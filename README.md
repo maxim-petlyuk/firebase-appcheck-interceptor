@@ -22,3 +22,5 @@ Android **Firebase AppCheck** SDK implements cache for the token itself. In case
 Actual problem is that this code is not synchronized inside Firebase Android SDK and it means that if you are doing 2 (and more) parallel function calls - it will produce multiple network requests into Firebase Backend Service.
 
 Considering that Firebase Android SDK has [**quota limit**](https://firebase.google.com/docs/app-check#quotas_limits),  you should avoid this. Good news that have already done it for you. Check details at the bottom.
+
+You can find details about proper integration [here](../blob/main/firebase-appcheck-synchronizer/README.md) 
