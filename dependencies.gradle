@@ -7,16 +7,17 @@ ext {
     ]
 
     versions = [
-            coreKtx   : "1.10.1",
-            appcompat : "1.6.1",
-            material  : "1.9.0",
-            lifecycle : "2.5.1",
-            koin      : "3.1.5",
-            web3Auth  : "3.1.0",
-            retrofit  : "2.9.0",
-            okHttp    : "4.10.0",
-            gson      : "2.10",
-            coroutines: "1.6.4"
+            coreKtx    : "1.10.1",
+            appcompat  : "1.6.1",
+            material   : "1.9.0",
+            lifecycle  : "2.5.1",
+            koin       : "3.1.5",
+            web3Auth   : "3.1.0",
+            retrofit   : "2.9.0",
+            okHttp     : "4.10.0",
+            gson       : "2.10",
+            coroutines : "1.6.4",
+            firebaseBom: "32.0.0"
     ]
 
     testingVersions = [
@@ -48,5 +49,10 @@ ext {
             junit      : "junit:junit:${testingVersions.junit}",
             robolectric: "org.robolectric:robolectric:${testingVersions.robolectric}",
             coroutines : "org.jetbrains.kotlinx:kotlinx-coroutines-test:${versions.coroutines}"
+    ]
+
+    firebase = [
+            bom     : "com.google.firebase:firebase-bom:${versions.firebaseBom}",
+            appCheck: "com.google.firebase:firebase-appcheck-playintegrity"
     ]
 }

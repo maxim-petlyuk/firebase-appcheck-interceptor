@@ -36,6 +36,9 @@ dependencies {
     implementation android.appcompat
     implementation android.material
 
+    implementation(platform(firebase.bom))
+    implementation firebase.appCheck
+
     testImplementation unitTesting.junit
     testImplementation unitTesting.robolectric
     testImplementation unitTesting.coroutines

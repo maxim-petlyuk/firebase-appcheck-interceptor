@@ -3,6 +3,7 @@ package io.appcheck.synchronizer.domain
 import androidx.annotation.VisibleForTesting
 import io.appcheck.synchronizer.data.AppCheckTokenExecutor
 import io.appcheck.synchronizer.domain.entity.AppCheckState
+import io.appcheck.synchronizer.domain.entity.FirebaseRequestTokenStrategy
 import io.appcheck.synchronizer.exceptions.RetryNotAllowedException
 import io.appcheck.synchronizer.exceptions.TokenExecutorServiceException
 import io.appcheck.synchronizer.utils.Logger
@@ -28,7 +29,9 @@ internal class DefaultAppCheckTokenProvider(
     override val appCheckState: AppCheckState
         get() = state
 
-    override suspend fun provideAppCheckToken(): Result<String> {
+    override suspend fun provideAppCheckToken(
+        strategy: FirebaseRequestTokenStrategy
+    ): Result<String> {
         return try {
             mutex.withLock {
                 Logger.i(
@@ -45,7 +48,7 @@ internal class DefaultAppCheckTokenProvider(
                     )
                 }
 
-                val tokenResult = appCheckTokenExecutor.getToken()
+                val tokenResult = appCheckTokenExecutor.getToken(strategy)
                     .onSuccess { token ->
                         notifyStateChanged(AppCheckState.Ready(token))
                     }.onFailure { exception ->
