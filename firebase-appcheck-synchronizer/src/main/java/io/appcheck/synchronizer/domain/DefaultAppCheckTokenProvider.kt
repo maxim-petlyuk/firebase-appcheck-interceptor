@@ -25,7 +25,7 @@ internal class DefaultAppCheckTokenProvider(
         get() = System.currentTimeMillis()
 
     @VisibleForTesting
-    val appCheckState: AppCheckState
+    override val appCheckState: AppCheckState
         get() = state
 
     override suspend fun provideAppCheckToken(): Result<String> {

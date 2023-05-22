@@ -1,6 +1,6 @@
 package io.appcheck.synchronizer.domain.entity
 
-internal sealed class AppCheckState {
+sealed class AppCheckState {
 
     object Idle : AppCheckState() {
 

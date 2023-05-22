@@ -26,9 +26,8 @@ internal class AppCheckTimeoutTest {
         val responseDelay = 5_000L // 5 seconds
         val dispatchTimeout = 2_000L // 2 seconds
 
-        val slowAppCheckSource = SlowAppCheckTokenExecutor(responseDelay)
-        val appCheckTokenProvider = TimeoutAppCheckTokenProvider(
-            appCheckTokenProvider = DefaultAppCheckTokenProvider(slowAppCheckSource),
+        val appCheckTokenProvider = AppCheckTokenProviderFactory.getAppCheckTokenProvider(
+            appCheckTokenExecutor = SlowAppCheckTokenExecutor(responseDelay),
             dispatchTimeoutMillis = dispatchTimeout
         )
 
@@ -47,12 +46,11 @@ internal class AppCheckTimeoutTest {
 
         val mockSuccessToken = "MockToken"
 
-        val slowAppCheckSource = SlowAppCheckTokenExecutor(
-            delayTimeMillis = responseDelay,
-            mockToken = mockSuccessToken
-        )
-        val appCheckTokenProvider = TimeoutAppCheckTokenProvider(
-            appCheckTokenProvider = DefaultAppCheckTokenProvider(slowAppCheckSource),
+        val appCheckTokenProvider = AppCheckTokenProviderFactory.getAppCheckTokenProvider(
+            appCheckTokenExecutor = SlowAppCheckTokenExecutor(
+                delayTimeMillis = responseDelay,
+                mockToken = mockSuccessToken
+            ),
             dispatchTimeoutMillis = dispatchTimeout
         )
 
@@ -77,12 +75,11 @@ internal class AppCheckTimeoutTest {
 
         val mockSuccessToken = "MockToken"
 
-        val slowAppCheckSource = SlowAppCheckTokenExecutor(
-            delayTimeMillis = responseDelay,
-            mockToken = mockSuccessToken
-        )
-        val appCheckTokenProvider = TimeoutAppCheckTokenProvider(
-            appCheckTokenProvider = DefaultAppCheckTokenProvider(slowAppCheckSource),
+        val appCheckTokenProvider = AppCheckTokenProviderFactory.getAppCheckTokenProvider(
+            appCheckTokenExecutor = SlowAppCheckTokenExecutor(
+                delayTimeMillis = responseDelay,
+                mockToken = mockSuccessToken
+            ),
             dispatchTimeoutMillis = dispatchTimeout
         )
 
@@ -107,12 +104,11 @@ internal class AppCheckTimeoutTest {
 
         val mockSuccessToken = "MockToken"
 
-        val slowAppCheckSource = SlowAppCheckTokenExecutor(
-            delayTimeMillis = responseDelay,
-            mockToken = mockSuccessToken
-        )
-        val appCheckTokenProvider = TimeoutAppCheckTokenProvider(
-            appCheckTokenProvider = DefaultAppCheckTokenProvider(slowAppCheckSource),
+        val appCheckTokenProvider = AppCheckTokenProviderFactory.getAppCheckTokenProvider(
+            appCheckTokenExecutor = SlowAppCheckTokenExecutor(
+                delayTimeMillis = responseDelay,
+                mockToken = mockSuccessToken
+            ),
             dispatchTimeoutMillis = dispatchTimeout
         )
 

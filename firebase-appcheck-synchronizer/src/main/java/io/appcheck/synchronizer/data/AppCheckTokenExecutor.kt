@@ -1,6 +1,6 @@
 package io.appcheck.synchronizer.data
 
-internal interface AppCheckTokenExecutor {
+interface AppCheckTokenExecutor {
 
     suspend fun getToken(): Result<String>
 }

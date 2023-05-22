@@ -20,16 +20,13 @@ internal class AppCheckRetryDelayTest {
         /* if error was happened, next retry attempt should be allowed after 5 seconds */
         val blockedTimeAfterError = 5_000L
 
-        val appCheckTokenProvider = DefaultAppCheckTokenProvider(
+        val appCheckTokenProvider = AppCheckTokenProviderFactory.getAppCheckTokenProvider(
             appCheckTokenExecutor = FailureAppCheckTokenExecutor(),
             blockedTimeAfterError = blockedTimeAfterError
         )
-        val decoratedCheckTokenProvider = TimeoutAppCheckTokenProvider(
-            appCheckTokenProvider = appCheckTokenProvider
-        )
 
         runTest {
-            decoratedCheckTokenProvider.provideAppCheckToken()
+            appCheckTokenProvider.provideAppCheckToken()
 
             assert(appCheckTokenProvider.appCheckState is AppCheckState.Error) {
                 "Initial token request, with mock failure behavior. We assume that provider should be in error state.\n" +
@@ -37,7 +34,7 @@ internal class AppCheckRetryDelayTest {
                 "Actual app check state: ${appCheckTokenProvider.appCheckState::class.simpleName}"
             }
 
-            decoratedCheckTokenProvider.provideAppCheckToken()
+            appCheckTokenProvider.provideAppCheckToken()
 
             assert(appCheckTokenProvider.appCheckState is AppCheckState.RetryNotAllowed) {
                 "Expected app check state: ${AppCheckState.RetryNotAllowed::class.simpleName}, \n"
@@ -51,15 +48,12 @@ internal class AppCheckRetryDelayTest {
         /* if error was happened, next retry attempt should be allowed after 2 seconds */
         val blockedTimeAfterError = 2_000L
 
-        val appCheckTokenProvider = DefaultAppCheckTokenProvider(
+        val appCheckTokenProvider = AppCheckTokenProviderFactory.getAppCheckTokenProvider(
             appCheckTokenExecutor = FailureAppCheckTokenExecutor(),
-            blockedTimeAfterError = blockedTimeAfterError
-        )
-        val decoratedCheckTokenProvider = TimeoutAppCheckTokenProvider(
-            appCheckTokenProvider = appCheckTokenProvider
+            blockedTimeAfterError = blockedTimeAfterError,
         )
 
-        decoratedCheckTokenProvider.provideAppCheckToken()
+        appCheckTokenProvider.provideAppCheckToken()
 
         assert(appCheckTokenProvider.appCheckState is AppCheckState.Error) {
             "Initial token request, with mock failure behavior. We assume that provider should be in error state.\n" +
@@ -70,7 +64,7 @@ internal class AppCheckRetryDelayTest {
         withContext(Dispatchers.IO) {
             delay(blockedTimeAfterError)
 
-            decoratedCheckTokenProvider.provideAppCheckToken()
+            appCheckTokenProvider.provideAppCheckToken()
 
             assert(appCheckTokenProvider.appCheckState is AppCheckState.Error) {
                 "Second token request, we have wait for unblocking time, and now retry should be allowed. \n" +
@@ -84,15 +78,12 @@ internal class AppCheckRetryDelayTest {
         /* if error was happened, next retry attempt should be allowed after 2 seconds */
         val blockedTimeAfterError = 0L
 
-        val appCheckTokenProvider = DefaultAppCheckTokenProvider(
+        val appCheckTokenProvider = AppCheckTokenProviderFactory.getAppCheckTokenProvider(
             appCheckTokenExecutor = FailureAppCheckTokenExecutor(),
             blockedTimeAfterError = blockedTimeAfterError
         )
-        val decoratedCheckTokenProvider = TimeoutAppCheckTokenProvider(
-            appCheckTokenProvider = appCheckTokenProvider
-        )
 
-        decoratedCheckTokenProvider.provideAppCheckToken()
+        appCheckTokenProvider.provideAppCheckToken()
 
         assert(appCheckTokenProvider.appCheckState is AppCheckState.Error) {
             "Initial token request, with mock failure behavior. We assume that provider should be in error state.\n" +
@@ -103,7 +94,7 @@ internal class AppCheckRetryDelayTest {
         withContext(Dispatchers.IO) {
             delay(blockedTimeAfterError)
 
-            decoratedCheckTokenProvider.provideAppCheckToken()
+            appCheckTokenProvider.provideAppCheckToken()
 
             assert(appCheckTokenProvider.appCheckState is AppCheckState.Error) {
                 "Second token request, we have wait for unblocking time, and now retry should be allowed. \n" +
