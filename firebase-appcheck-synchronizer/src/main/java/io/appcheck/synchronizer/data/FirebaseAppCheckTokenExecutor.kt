@@ -9,14 +9,14 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.resume
 
-class FirebaseAppCheckTokenExecutor : AppCheckTokenExecutor {
+class FirebaseAppCheckTokenExecutor(
+    private val strategy: FirebaseRequestTokenStrategy
+) : AppCheckTokenExecutor {
 
     private val firebaseAppCheck = FirebaseAppCheck.getInstance()
     private val mutex = Mutex()
 
-    override suspend fun getToken(
-        strategy: FirebaseRequestTokenStrategy
-    ): Result<String> {
+    override suspend fun getToken(): Result<String> {
         return mutex.withLock {
             executeTokenRequest(getAppCheckTokenTask(strategy))
         }

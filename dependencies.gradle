@@ -14,7 +14,7 @@ ext {
             koin       : "3.1.5",
             web3Auth   : "3.1.0",
             retrofit   : "2.9.0",
-            okHttp     : "4.10.0",
+            okHttp     : "4.11.0",
             gson       : "2.10",
             coroutines : "1.6.4",
             firebaseBom: "32.0.0"

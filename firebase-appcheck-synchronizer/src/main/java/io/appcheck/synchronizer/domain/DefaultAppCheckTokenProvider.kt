@@ -3,7 +3,6 @@ package io.appcheck.synchronizer.domain
 import androidx.annotation.VisibleForTesting
 import io.appcheck.synchronizer.data.AppCheckTokenExecutor
 import io.appcheck.synchronizer.domain.entity.AppCheckState
-import io.appcheck.synchronizer.domain.entity.FirebaseRequestTokenStrategy
 import io.appcheck.synchronizer.exceptions.RetryNotAllowedException
 import io.appcheck.synchronizer.exceptions.TokenExecutorServiceException
 import io.appcheck.synchronizer.utils.Logger
@@ -11,9 +10,6 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-/**
- * Class is designed to be used as singleton
- */
 internal class DefaultAppCheckTokenProvider(
     private val appCheckTokenExecutor: AppCheckTokenExecutor,
     private val blockedTimeAfterError: Long = 0L
@@ -29,9 +25,7 @@ internal class DefaultAppCheckTokenProvider(
     override val appCheckState: AppCheckState
         get() = state
 
-    override suspend fun provideAppCheckToken(
-        strategy: FirebaseRequestTokenStrategy
-    ): Result<String> {
+    override suspend fun provideAppCheckToken(): Result<String> {
         return try {
             mutex.withLock {
                 Logger.i(
@@ -48,7 +42,7 @@ internal class DefaultAppCheckTokenProvider(
                     )
                 }
 
-                val tokenResult = appCheckTokenExecutor.getToken(strategy)
+                val tokenResult = appCheckTokenExecutor.getToken()
                     .onSuccess { token ->
                         notifyStateChanged(AppCheckState.Ready(token))
                     }.onFailure { exception ->

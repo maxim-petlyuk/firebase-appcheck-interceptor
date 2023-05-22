@@ -2,7 +2,6 @@ package io.appcheck.synchronizer.domain
 
 import io.appcheck.synchronizer.TestCoroutineRule
 import io.appcheck.synchronizer.data.SlowAppCheckTokenExecutor
-import io.appcheck.synchronizer.domain.entity.FirebaseRequestTokenStrategy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
@@ -22,8 +21,6 @@ internal class AppCheckTimeoutTest {
     @get:Rule
     val testCoroutineRule = TestCoroutineRule()
 
-    private val mockTokenStrategy = FirebaseRequestTokenStrategy.Limited
-
     @Test
     fun `verify dispatch timeout for app token provider`() {
         val responseDelay = 5_000L // 5 seconds
@@ -35,7 +32,7 @@ internal class AppCheckTimeoutTest {
         )
 
         runTest {
-            val tokenResult = appCheckTokenProvider.provideAppCheckToken(mockTokenStrategy)
+            val tokenResult = appCheckTokenProvider.provideAppCheckToken()
             assert(tokenResult.isFailure) {
                 "Dispatch timeout is over, function call should return failure result"
             }
@@ -58,7 +55,7 @@ internal class AppCheckTimeoutTest {
         )
 
         runTest {
-            val tokenResult = appCheckTokenProvider.provideAppCheckToken(mockTokenStrategy)
+            val tokenResult = appCheckTokenProvider.provideAppCheckToken()
 
             assert(tokenResult.isSuccess) {
                 "Dispatch timeout is over, function call should return success result"
@@ -87,7 +84,7 @@ internal class AppCheckTimeoutTest {
         )
 
         runTest {
-            val tokenResult = appCheckTokenProvider.provideAppCheckToken(mockTokenStrategy)
+            val tokenResult = appCheckTokenProvider.provideAppCheckToken()
 
             assert(tokenResult.isSuccess) {
                 "Dispatch timeout is over, function call should return hardcoded success result"
@@ -116,7 +113,7 @@ internal class AppCheckTimeoutTest {
         )
 
         val fetchTokenScope = launch(Dispatchers.Default) {
-            val tokenResult = appCheckTokenProvider.provideAppCheckToken(mockTokenStrategy)
+            val tokenResult = appCheckTokenProvider.provideAppCheckToken()
 
             assert(tokenResult.isFailure) {
                 "Job was cancelled and we expect failure result"

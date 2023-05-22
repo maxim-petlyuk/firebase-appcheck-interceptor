@@ -2,7 +2,6 @@ package io.appcheck.synchronizer.domain
 
 import io.appcheck.synchronizer.data.FailureAppCheckTokenExecutor
 import io.appcheck.synchronizer.domain.entity.AppCheckState
-import io.appcheck.synchronizer.domain.entity.FirebaseRequestTokenStrategy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -16,8 +15,6 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 internal class AppCheckRetryDelayTest {
 
-    private val mockTokenStrategy = FirebaseRequestTokenStrategy.Limited
-
     @Test
     fun `verify retry not allowed after error during blocked time`() {
         /* if error was happened, next retry attempt should be allowed after 5 seconds */
@@ -29,7 +26,7 @@ internal class AppCheckRetryDelayTest {
         )
 
         runTest {
-            appCheckTokenProvider.provideAppCheckToken(mockTokenStrategy)
+            appCheckTokenProvider.provideAppCheckToken()
 
             assert(appCheckTokenProvider.appCheckState is AppCheckState.Error) {
                 "Initial token request, with mock failure behavior. We assume that provider should be in error state.\n" +
@@ -37,7 +34,7 @@ internal class AppCheckRetryDelayTest {
                 "Actual app check state: ${appCheckTokenProvider.appCheckState::class.simpleName}"
             }
 
-            appCheckTokenProvider.provideAppCheckToken(mockTokenStrategy)
+            appCheckTokenProvider.provideAppCheckToken()
 
             assert(appCheckTokenProvider.appCheckState is AppCheckState.RetryNotAllowed) {
                 "Expected app check state: ${AppCheckState.RetryNotAllowed::class.simpleName}, \n"
@@ -56,7 +53,7 @@ internal class AppCheckRetryDelayTest {
             blockedTimeAfterError = blockedTimeAfterError,
         )
 
-        appCheckTokenProvider.provideAppCheckToken(mockTokenStrategy)
+        appCheckTokenProvider.provideAppCheckToken()
 
         assert(appCheckTokenProvider.appCheckState is AppCheckState.Error) {
             "Initial token request, with mock failure behavior. We assume that provider should be in error state.\n" +
@@ -67,7 +64,7 @@ internal class AppCheckRetryDelayTest {
         withContext(Dispatchers.IO) {
             delay(blockedTimeAfterError)
 
-            appCheckTokenProvider.provideAppCheckToken(mockTokenStrategy)
+            appCheckTokenProvider.provideAppCheckToken()
 
             assert(appCheckTokenProvider.appCheckState is AppCheckState.Error) {
                 "Second token request, we have wait for unblocking time, and now retry should be allowed. \n" +
@@ -86,7 +83,7 @@ internal class AppCheckRetryDelayTest {
             blockedTimeAfterError = blockedTimeAfterError
         )
 
-        appCheckTokenProvider.provideAppCheckToken(mockTokenStrategy)
+        appCheckTokenProvider.provideAppCheckToken()
 
         assert(appCheckTokenProvider.appCheckState is AppCheckState.Error) {
             "Initial token request, with mock failure behavior. We assume that provider should be in error state.\n" +
@@ -97,7 +94,7 @@ internal class AppCheckRetryDelayTest {
         withContext(Dispatchers.IO) {
             delay(blockedTimeAfterError)
 
-            appCheckTokenProvider.provideAppCheckToken(mockTokenStrategy)
+            appCheckTokenProvider.provideAppCheckToken()
 
             assert(appCheckTokenProvider.appCheckState is AppCheckState.Error) {
                 "Second token request, we have wait for unblocking time, and now retry should be allowed. \n" +
