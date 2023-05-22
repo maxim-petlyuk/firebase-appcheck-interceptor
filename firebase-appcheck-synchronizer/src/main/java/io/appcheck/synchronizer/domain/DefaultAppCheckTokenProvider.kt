@@ -3,6 +3,8 @@ package io.appcheck.synchronizer.domain
 import androidx.annotation.VisibleForTesting
 import io.appcheck.synchronizer.data.AppCheckTokenExecutor
 import io.appcheck.synchronizer.domain.entity.AppCheckState
+import io.appcheck.synchronizer.exceptions.RetryNotAllowedException
+import io.appcheck.synchronizer.exceptions.TokenExecutorServiceException
 import io.appcheck.synchronizer.utils.Logger
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.sync.Mutex
@@ -26,7 +28,7 @@ internal class DefaultAppCheckTokenProvider(
     val appCheckState: AppCheckState
         get() = state
 
-    override suspend fun provideAppCheckToken(): String {
+    override suspend fun provideAppCheckToken(): Result<String> {
         return try {
             mutex.withLock {
                 Logger.i(
@@ -38,7 +40,9 @@ internal class DefaultAppCheckTokenProvider(
 
                 if (!allowRetry()) {
                     notifyStateChanged(generateRetryNotAllowedState())
-                    return@withLock FAILURE_BACKUP_TOKEN
+                    return@withLock Result.failure(
+                        RetryNotAllowedException("Retry is not allowed")
+                    )
                 }
 
                 val tokenResult = appCheckTokenExecutor.getToken()
@@ -53,7 +57,16 @@ internal class DefaultAppCheckTokenProvider(
                         notifyStateChanged(errorState)
                     }
 
-                tokenResult.getOrNull() ?: FAILURE_BACKUP_TOKEN
+                val token = tokenResult.getOrNull()
+
+                if (tokenResult.isFailure || token.isNullOrEmpty()) {
+                    return@withLock Result.failure(
+                        tokenResult.exceptionOrNull()
+                            ?: TokenExecutorServiceException()
+                    )
+                }
+
+                Result.success(token)
             }
         } catch (exception: TimeoutCancellationException) {
             val errorState = AppCheckState.Error(
@@ -62,7 +75,7 @@ internal class DefaultAppCheckTokenProvider(
                 unblockRetryTime = calculateUnblockTime()
             )
             notifyStateChanged(errorState)
-            FAILURE_BACKUP_TOKEN
+            Result.failure(exception)
         }
     }
 
@@ -114,10 +127,5 @@ internal class DefaultAppCheckTokenProvider(
                 "action: [state changed: [$state] ], " +
                 "thread: [${Thread.currentThread().id}}]"
         )
-    }
-
-    private companion object {
-
-        private const val FAILURE_BACKUP_TOKEN = ""
     }
 }

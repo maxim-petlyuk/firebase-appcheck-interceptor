@@ -4,11 +4,10 @@ import kotlinx.coroutines.withTimeout
 
 internal class TimeoutAppCheckTokenProvider(
     private val appCheckTokenProvider: AppCheckTokenProvider,
-    private val dispatchTimeoutMillis: Long = 0L,
-    private val failureToken: String = ""
+    private val dispatchTimeoutMillis: Long = 0L
 ) : AppCheckTokenProvider {
 
-    override suspend fun provideAppCheckToken(): String {
+    override suspend fun provideAppCheckToken(): Result<String> {
         return try {
             if (dispatchTimeoutMillis <= 0L) {
                 appCheckTokenProvider.provideAppCheckToken()
@@ -18,7 +17,7 @@ internal class TimeoutAppCheckTokenProvider(
                 }
             }
         } catch (error: Throwable) {
-            failureToken
+            Result.failure(error)
         }
     }
 }

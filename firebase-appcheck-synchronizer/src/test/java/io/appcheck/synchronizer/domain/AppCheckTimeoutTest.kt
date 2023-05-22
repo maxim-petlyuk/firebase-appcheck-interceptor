@@ -26,19 +26,16 @@ internal class AppCheckTimeoutTest {
         val responseDelay = 5_000L // 5 seconds
         val dispatchTimeout = 2_000L // 2 seconds
 
-        val timeoutFailureToken = "UniqueFailureToken"
-
         val slowAppCheckSource = SlowAppCheckTokenExecutor(responseDelay)
         val appCheckTokenProvider = TimeoutAppCheckTokenProvider(
             appCheckTokenProvider = DefaultAppCheckTokenProvider(slowAppCheckSource),
-            dispatchTimeoutMillis = dispatchTimeout,
-            failureToken = timeoutFailureToken
+            dispatchTimeoutMillis = dispatchTimeout
         )
 
         runTest {
-            val token = appCheckTokenProvider.provideAppCheckToken()
-            assert(token == timeoutFailureToken) {
-                "Dispatch timeout is over, function call should return hardcoded failure result: $timeoutFailureToken"
+            val tokenResult = appCheckTokenProvider.provideAppCheckToken()
+            assert(tokenResult.isFailure) {
+                "Dispatch timeout is over, function call should return failure result"
             }
         }
     }
@@ -48,7 +45,6 @@ internal class AppCheckTimeoutTest {
         val responseDelay = 2_000L // 5 seconds
         val dispatchTimeout = 5_000L // 2 seconds
 
-        val timeoutFailureToken = "UniqueFailureToken"
         val mockSuccessToken = "MockToken"
 
         val slowAppCheckSource = SlowAppCheckTokenExecutor(
@@ -57,14 +53,19 @@ internal class AppCheckTimeoutTest {
         )
         val appCheckTokenProvider = TimeoutAppCheckTokenProvider(
             appCheckTokenProvider = DefaultAppCheckTokenProvider(slowAppCheckSource),
-            dispatchTimeoutMillis = dispatchTimeout,
-            failureToken = timeoutFailureToken
+            dispatchTimeoutMillis = dispatchTimeout
         )
 
         runTest {
-            val token = appCheckTokenProvider.provideAppCheckToken()
-            assert(token == mockSuccessToken) {
-                "Dispatch timeout is over, function call should return hardcoded failure result: $timeoutFailureToken"
+            val tokenResult = appCheckTokenProvider.provideAppCheckToken()
+
+            assert(tokenResult.isSuccess) {
+                "Dispatch timeout is over, function call should return success result"
+            }
+
+            assert(tokenResult.getOrNull() == mockSuccessToken) {
+                "Dispatch timeout is over, function call should return expected mock token: " +
+                    "[${mockSuccessToken}], but was [${tokenResult.getOrNull()}]"
             }
         }
     }
@@ -74,7 +75,6 @@ internal class AppCheckTimeoutTest {
         val responseDelay = 2_000L // 5 seconds
         val dispatchTimeout = 0L
 
-        val timeoutFailureToken = "UniqueFailureToken"
         val mockSuccessToken = "MockToken"
 
         val slowAppCheckSource = SlowAppCheckTokenExecutor(
@@ -83,14 +83,19 @@ internal class AppCheckTimeoutTest {
         )
         val appCheckTokenProvider = TimeoutAppCheckTokenProvider(
             appCheckTokenProvider = DefaultAppCheckTokenProvider(slowAppCheckSource),
-            dispatchTimeoutMillis = dispatchTimeout,
-            failureToken = timeoutFailureToken
+            dispatchTimeoutMillis = dispatchTimeout
         )
 
         runTest {
-            val token = appCheckTokenProvider.provideAppCheckToken()
-            assert(token == mockSuccessToken) {
-                "Dispatch timeout is over, function call should return hardcoded failure result: $timeoutFailureToken"
+            val tokenResult = appCheckTokenProvider.provideAppCheckToken()
+
+            assert(tokenResult.isSuccess) {
+                "Dispatch timeout is over, function call should return hardcoded success result"
+            }
+
+            assert(tokenResult.getOrNull() == mockSuccessToken) {
+                "Dispatch timeout is over, function call should return hardcoded success result: " +
+                    "[${mockSuccessToken}], but was [${tokenResult.getOrNull()}]"
             }
         }
     }
@@ -100,7 +105,6 @@ internal class AppCheckTimeoutTest {
         val responseDelay = 5_000L // 10 seconds
         val dispatchTimeout = 3_000L // 3 seconds
 
-        val timeoutFailureToken = "UniqueFailureToken"
         val mockSuccessToken = "MockToken"
 
         val slowAppCheckSource = SlowAppCheckTokenExecutor(
@@ -109,15 +113,14 @@ internal class AppCheckTimeoutTest {
         )
         val appCheckTokenProvider = TimeoutAppCheckTokenProvider(
             appCheckTokenProvider = DefaultAppCheckTokenProvider(slowAppCheckSource),
-            dispatchTimeoutMillis = dispatchTimeout,
-            failureToken = timeoutFailureToken
+            dispatchTimeoutMillis = dispatchTimeout
         )
 
         val fetchTokenScope = launch(Dispatchers.Default) {
-            val token = appCheckTokenProvider.provideAppCheckToken()
+            val tokenResult = appCheckTokenProvider.provideAppCheckToken()
 
-            assert(token == timeoutFailureToken) {
-                "Job was cancelled and we expect failure backup token: $timeoutFailureToken"
+            assert(tokenResult.isFailure) {
+                "Job was cancelled and we expect failure result"
             }
         }
 
