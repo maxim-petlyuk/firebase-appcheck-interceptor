@@ -1,5 +1,4 @@
 # Firebase App Check. Deluxe edition
-------
 
 The "Firebase App Check" feature is used to verify the authenticity and integrity of requests, and can be used in 2 cases:
 - protect requests to Firebase services, such as the Firebase Realtime Database, Firebase Cloud Firestore, Firebase Authentication, and Firebase Cloud Functions.
@@ -9,14 +8,14 @@ For more information check [Firebase official documentation](https://firebase.go
 
 
 ## 💡 Which problems we are solving?
-------
+
 - synchronized requests to fetch **Firebase App Check Token** to safe quota limit
 - quick integration of **Firebase App Check Token** for multiple requests in your application
 - delay before retry attempts in case of getting errors from Firebase SDK
-- solution built on top of Kotlin coroutines
+
 
 ## ⚡ 1. Synchronized network request
-------
+
 Android **Firebase AppCheck** SDK implements cache for the token itself. In case there is no available token in the cache or you want to make **forceRefresh** - SDK will do network request to fetch token from Firebase Backend Service.
 
 Actual problem is that this code is not synchronized inside Firebase Android SDK and it means that if you are doing 2 (and more) parallel function calls - it will produce multiple network requests into Firebase Backend Service.
